@@ -1,66 +1,64 @@
 import { useEffect } from 'react';
-import {Container, AppBar, Typography, Grow, Grid} from '@mui/material';
-import memories from './images/memories.png';
+import {Route,Navigate, Routes} from 'react-router-dom';
+import {Container} from '@mui/material';
 import {useDispatch,useSelector} from'react-redux';
-import { getAllPosts } from './redux/features/posts/postsSlice';
-import Loader from './components/Loader';
-import Posts from './components/Posts';
-import Form from './components/Form';
+import { logout,saveUser } from './redux/features/auth/authSlice';
+import Navbar from './components/Navbar';
+import Home from './components/Home';
+import Login from './components/Login';
+import SignUp from './components/SignUp';
+import PostDetails from './components/PostDetails';
 
 const App = () => {
-  const {isLoading,posts} = useSelector((state) => state.posts);
+  const {user,token} = useSelector((state) => state.auth);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    dispatch(getAllPosts());
+    const token = localStorage.getItem('token');
+    if (!token) {
+        dispatch(logout());
+    } else {
+        const expirationTime = new Date(localStorage.getItem('expirationTime'));
+        if (expirationTime <= new Date()) {
+          dispatch(logout());
+        } else {
+            dispatch(saveUser({
+              token: token,
+              user: JSON.parse(localStorage.getItem('user')),
+            }));
+        }
+    }
   },[dispatch]);
 
-  let postsComponent = null;
-  if(isLoading){
-    postsComponent = <Loader />;
+  let routes = null;
+  if(token){
+    routes = (
+      <Routes>
+        <Route path="/" element={<Navigate to="/posts"/>}/>
+        <Route path="/posts" element={<Home token={token} />} />
+        <Route path="/posts/:id" element={<PostDetails />}/>
+        <Route path="*" element={<Navigate to="/posts"/>} />
+      </Routes>
+    );
   }else{
-    postsComponent = <Posts posts={posts}/>;
+    routes = (
+      <Routes>
+        <Route path="/" element={<Navigate to="/posts"/>}/>
+        <Route path="/posts" element={<Home token={token} />} />
+        <Route path="/posts/:id" element={<PostDetails />}/>
+        <Route path="signin" element={<Login />} />
+        <Route path="signup" element={<SignUp />} />
+        <Route path="*" element={<Navigate to="/posts"/>} />
+      </Routes>
+    );
   }
-
+  
   return (
     <Container maxWidth={false}>
-      <AppBar position='static' color='inherit' style={styles.appBar}>
-        <Typography variant='h2' component='h1' style={styles.heading}>Memories</Typography>
-        <img src={memories} alt='Memories' style={styles.image}/>
-      </AppBar>
-      <Grow in={true}>
-        <Container>
-          <Grid container justifyContent='space-between' alignItems='flex-start' spacing={2}>
-            <Grid item xs={12} md={7}>
-              {postsComponent}
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Form />
-            </Grid>
-          </Grid>
-        </Container>
-      </Grow>
+      <Navbar user={user} token={token} />
+      {routes}
     </Container>
   );
 };
-
-const styles = {
-  appBar: {
-    borderRadius: 15,
-    margin: '30px 0',
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  heading: {
-    color: 'rgba(0,183,255, 1)',
-  },
-  image: {
-    marginLeft: '15px',
-    maxWidth: '60px',
-    height: 'auto',
-  },
-}
 
 export default App;

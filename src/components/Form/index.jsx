@@ -8,6 +8,7 @@ import {useSelector,useDispatch} from 'react-redux';
 
 const Form = () => {
     const {selectedPost: postData} = useSelector((state) => state.posts);
+    const {user,token} = useSelector((state) => state.auth);
     const dispatch = useDispatch();
     
     const [feedback,setFeedback] = useState({
@@ -40,7 +41,12 @@ const Form = () => {
             if(postData._id === null){
                 createPost({
                     ...postData,
+                    authorId: user._id,
                     tags: postData.tags.trim().split(' '),
+                },{
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    }
                 }).then((response) => {
                     if(response.status === 201){
                         dispatch(addPost(response.data));
@@ -78,6 +84,10 @@ const Form = () => {
                 updatePost(postData._id,{
                     ...postData,
                     tags: postData.tags.trim().split(' '),
+                },{
+                    headers: {
+                        "Authorization": `Bearer ${token}`,
+                    }
                 }).then((response) => {
                     if(response.status === 200){
                         dispatch(changePost(response.data));

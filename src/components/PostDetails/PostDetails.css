@@ -1,0 +1,39 @@
+.media{
+    border-radius: 20px;
+    object-fit: cover;
+    width: 100%;
+    max-height: 600px;
+}
+
+.card{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: aliceblue;
+    box-shadow: 0px 4px 8px 0 rgba(0,0,0,0.2),0px 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+.imageSection{
+    margin: 20px;
+    flex: 1;
+}
+
+.section{
+    margin: 20px;
+    flex: 1;
+}
+
+@media only screen and (max-width: 600px) {
+    .card{
+        flex-wrap: wrap;
+        flex-direction: column;
+    }
+    
+    .imageSection{
+      margin-left: 0;
+    }
+
+    .section{
+        margin: 10px;
+    }
+}
